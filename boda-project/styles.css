@@ -1,0 +1,1203 @@
+/* ============================================================
+   INVITACIÓN DE BODA — HOJA DE ESTILOS PRINCIPAL
+   ============================================================
+   ESTRUCTURA:
+     1.  Variables globales (colores, fuentes) — EDITA AQUÍ
+     2.  Reset y base
+     3.  Animaciones globales (@keyframes)
+     4.  Estrellas de fondo
+     5.  Canvas de pétalos
+     6.  Botón de música (compartido en ambas pantallas)
+     7.  ── PANTALLA 1: Sobre de invitación ──
+         7a. Contenedor #envelope-screen
+         7b. Escena 3D (.scene)
+         7c. Sobre (.envelope, .back, .flap, .letter)
+         7d. Texto "Abrir invitación"
+         7e. Transición de salida
+     8.  ── PANTALLA 2: Invitación completa (#main-content) ──
+         8a. Contenedor general
+         8b. Sección Hero
+         8c. Ornamentos y divisores
+         8d. Sección mensaje
+         8e. Sección foto principal
+         8f. Sección detalles del evento
+         8g. Cuenta regresiva
+         8h. Galería de fotos
+         8i. Sección ceremonias / venues
+         8j. Código de vestimenta
+         8k. Botón RSVP (formulario Google)
+         8l. Sección cierre
+     9.  Clases de animación scroll (.reveal)
+     10. Responsive — móvil
+   ============================================================ */
+
+
+/* ============================================================
+   1. VARIABLES GLOBALES
+   ─────────────────────────────────────────────────────────────
+   Edita estos valores para cambiar toda la paleta de colores
+   y tipografía del proyecto de una sola vez.
+   ============================================================ */
+:root {
+  /* Colores principales */
+  --color-bg:        #0d0a08;        /* Fondo muy oscuro, casi negro cálido */
+  --color-bg2:       #1a120b;        /* Fondo secundario, marrón oscuro */
+  --color-gold:      #c9a84c;        /* Dorado principal */
+  --color-gold-lt:   #e8d5a3;        /* Dorado claro */
+  --color-gold-dk:   #8a6c2a;        /* Dorado oscuro */
+  --color-cream:     #f5efe6;        /* Blanco roto / crema */
+  --color-rose:      #c4727a;        /* Rosa suave (acento) */
+
+  /* Tipografías */
+  --font-script:     'Great Vibes', cursive;          /* Cursiva principal para nombres */
+  --font-serif:      'Cormorant Garamond', serif;     /* Serif elegante para cuerpo */
+  --font-sans:       'Montserrat', sans-serif;        /* Sans-serif para etiquetas */
+
+  /* Transiciones */
+  --transition-slow: 1.2s cubic-bezier(.65,.05,.36,1);
+  --transition-mid:  0.6s ease;
+  --transition-fast: 0.3s ease;
+}
+
+
+/* ============================================================
+   2. RESET Y BASE
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-serif);
+  background: radial-gradient(circle at center, var(--color-bg2), var(--color-bg));
+  color: var(--color-cream);
+  overflow-x: hidden;
+  /* Al inicio se bloquea el scroll (está en pantalla del sobre) */
+  overflow-y: hidden;
+}
+
+
+/* ============================================================
+   3. ANIMACIONES GLOBALES (@keyframes)
+   ============================================================ */
+
+/* Giro continuo — loader */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Pulso de opacidad — loader y estrellas */
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1;   }
+}
+
+/* Parpadeo de estrella */
+@keyframes twinkle {
+  0%, 100% { opacity: 0; }
+  50%       { opacity: var(--op, 0.6); }
+}
+
+/* Elemento entra desde abajo con fade */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Fade simple */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Escala con fade */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+
+/* Flecha de scroll rebota */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0);  }
+  50%       { transform: translateY(8px); }
+}
+
+/* Brillo pulsante en texto */
+@keyframes glowText {
+  0%, 100% { text-shadow: 0 0 40px rgba(201,168,76,0.3); }
+  50%       { text-shadow: 0 0 80px rgba(201,168,76,0.7), 0 0 120px rgba(201,168,76,0.3); }
+}
+
+/* Desvanecimiento de salida — pantalla del sobre */
+@keyframes fadeOut {
+  to { opacity: 0; filter: blur(6px); }
+}
+
+/* Pulso del botón de música al reproducir */
+@keyframes musicPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(201,168,76,0.3); }
+  50%       { box-shadow: 0 0 40px rgba(201,168,76,0.7); }
+}
+
+/* Pulso del botón de música estilo index.css */
+@keyframes musicBtnPulse {
+  0%   { transform: translateX(-50%) scale(1);   }
+  50%  { transform: translateX(-50%) scale(1.15); }
+  100% { transform: translateX(-50%) scale(1);   }
+}
+
+
+/* ============================================================
+   4. ESTRELLAS DE FONDO
+   Las genera dinámicamente el JS en ambas pantallas
+   ============================================================ */
+.stars-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--color-gold-lt);
+  border-radius: 50%;
+  animation: twinkle var(--dur, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0;
+}
+
+
+/* ============================================================
+   5. CANVAS DE PÉTALOS
+   Cubre toda la ventana, sobre estrellas, bajo el contenido
+   ============================================================ */
+#petals-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+
+/* ============================================================
+   6. BOTÓN DE MÚSICA
+   ─────────────────────────────────────────────────────────────
+   Centrado en la parte inferior, visible en ambas pantallas.
+   El JS controla cuándo se muestra y oculta según la pantalla.
+   ============================================================ */
+#music-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--color-gold);
+
+  background: rgba(13, 10, 8, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  color: var(--color-gold);
+  font-size: 26px;
+  font-family: var(--font-serif);
+
+  cursor: pointer;
+  z-index: 3000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 0 20px rgba(201,168,76,0.25);
+  transition: var(--transition-fast);
+}
+
+#music-btn:hover {
+  box-shadow: 0 0 35px rgba(201,168,76,0.5);
+  transform: translateX(-50%) scale(1.08);
+}
+
+/* Clase añadida por JS cuando hay música activa */
+#music-btn.playing {
+  animation: musicBtnPulse 1.8s ease infinite;
+}
+
+
+/* ============================================================
+   7a. PANTALLA 1 — Contenedor del sobre (#envelope-screen)
+   ─────────────────────────────────────────────────────────────
+   Ocupa 100% de la pantalla y centra el sobre perfectamente
+   ============================================================ */
+#envelope-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at center, var(--color-bg2), var(--color-bg));
+  z-index: 9000;
+  transition: opacity 1s ease, filter 1s ease;
+}
+
+/* Aplicada por JS al hacer clic — desvanecimiento de salida */
+#envelope-screen.fade-out {
+  animation: fadeOut 1s ease forwards;
+  pointer-events: none;
+}
+
+/* Pequeño texto sobre el sobre */
+.envelope-hint {
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--color-gold-dk);
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeSlideUp 1s ease 1s forwards;
+}
+
+
+/* ============================================================
+   7b. ESCENA 3D
+   Provee profundidad visual para la apertura del sobre
+   ============================================================ */
+.scene {
+  perspective: 1200px;
+  width: 340px;
+  height: 240px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* ============================================================
+   7c. SOBRE (.envelope, .back, .flap, .letter)
+   ============================================================ */
+
+/* — Contenedor principal del sobre — */
+.envelope {
+  width: 320px;
+  height: 200px;
+  position: relative;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform var(--transition-fast);
+
+  /* Entrada animada */
+  opacity: 0;
+  animation: scaleIn 1.2s ease 0.3s forwards;
+}
+
+.envelope:hover {
+  transform: scale(1.03) translateY(-4px);
+}
+
+/* — Fondo / base del sobre (papel crema) — */
+.back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #e8d5c4, #f5efe6);
+  border-radius: 6px;
+  box-shadow:
+    0 24px 48px rgba(0,0,0,0.5),
+    inset 0 0 20px rgba(0,0,0,0.04);
+}
+
+/* Líneas decorativas tipo papel de carta sobre el fondo */
+.back::after {
+  content: '';
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(201,168,76,0.35);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+/* — Solapa superior del sobre — */
+.flap {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(150deg, #e0c9a8, var(--color-gold));
+  clip-path: polygon(0 0, 100% 0, 50% 54%);
+  transform-origin: top center;
+  transition: transform var(--transition-slow);
+  z-index: 10;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* Sello ornamental en la solapa */
+.flap::after {
+  content: '✦';
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(13,10,8,0.4);
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+/* — Carta interna — se muestra al abrir el sobre — */
+.letter {
+  position: absolute;
+  width: 92%;
+  height: 86%;
+  left: 4%;
+  bottom: 7%;
+
+  background:
+    radial-gradient(circle at top left,  rgba(200,150,120,0.18), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(180,120,90,0.18), transparent 60%),
+    #fff8f0;
+
+  border-radius: 8px;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.3);
+
+  /* Empieza oculta dentro del sobre */
+  transform: translateY(115%) scale(0.96);
+  transition: transform var(--transition-slow);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+
+  z-index: 5;
+  padding: 16px;
+}
+
+/* Borde dorado fino sobre la carta */
+.letter::before {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Texto pequeño tipo "SAVE THE DATE" */
+.letter .letter-pretitle {
+  font-family: var(--font-sans);
+  font-size: 0.5rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #8a6c2a;
+}
+
+/* Nombres principales dentro de la carta */
+.letter .letter-names {
+  font-family: var(--font-script);
+  font-size: 1.7rem;
+  color: #3a2a0a;
+  line-height: 1.1;
+}
+
+/* Fecha dentro de la carta */
+.letter .letter-date {
+  font-family: var(--font-sans);
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  color: #6b4f1e;
+}
+
+
+/* ============================================================
+   7d. TEXTO "ABRIR INVITACIÓN" bajo el sobre
+   ============================================================ */
+.open-text {
+  margin-top: 28px;
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  opacity: 0;
+  animation: fadeIn 1s ease 1.5s forwards;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.open-text::before,
+.open-text::after {
+  content: '';
+  display: inline-block;
+  width: 30px;
+  height: 1px;
+  background: var(--color-gold-dk);
+}
+
+
+/* ============================================================
+   7e. ESTADOS DE APERTURA DEL SOBRE
+   Clases añadidas por JS al hacer clic en .envelope
+   ============================================================ */
+
+/* La solapa se pliega hacia atrás */
+.envelope.open .flap {
+  transform: rotateX(165deg);
+}
+
+/* La carta sale hacia arriba */
+.envelope.open .letter {
+  transform: translateY(-28%) scale(1.02);
+}
+
+
+/* ============================================================
+   8a. PANTALLA 2 — Contenedor principal (#main-content)
+   ============================================================ */
+#main-content {
+  display: none;         /* JS lo cambia a block tras cerrar el sobre */
+  opacity: 0;
+  transition: opacity 1s ease;
+  position: relative;
+  z-index: 5;
+  max-width: 680px;
+  margin: 0 auto;
+  padding-bottom: 100px; /* Espacio para el botón de música fijo */
+}
+
+
+/* ============================================================
+   8b. SECCIÓN HERO — Portada de la invitación
+   ============================================================ */
+.section-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 30px;
+  overflow: hidden;
+}
+
+/* Imagen de fondo del hero
+   ─────────────────────────────────────────────────────────────
+   PARA CAMBIAR LA FOTO: edita la propiedad background-image
+   con la URL de tu imagen, por ejemplo:
+   background-image: url('foto-pareja.jpg');
+   ──────────────────────────────────────────────────────────── */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80');
+  background-size: cover;
+  background-position: center 30%;
+  filter: brightness(0.3) saturate(0.7);
+  will-change: transform; /* Optimización parallax */
+}
+
+/* Degradado sobre la imagen del hero */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 30%, rgba(13,10,8,0.75) 100%),
+    linear-gradient(to bottom,
+      rgba(13,10,8,0.35) 0%,
+      transparent 25%,
+      transparent 70%,
+      rgba(13,10,8,0.9) 100%
+    );
+}
+
+/* Marco decorativo con esquinas doradas */
+.hero-frame {
+  position: absolute;
+  inset: 20px;
+  border: 1px solid rgba(201,168,76,0.22);
+  pointer-events: none;
+}
+
+.hero-frame::before,
+.hero-frame::after {
+  content: '';
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: var(--color-gold);
+  border-style: solid;
+}
+
+.hero-frame::before {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
+}
+
+.hero-frame::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+/* Contenido del hero (sobre el overlay) */
+.hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Etiqueta pequeña sobre los nombres */
+.hero-pretitle {
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  opacity: 0;
+  animation: fadeSlideUp 1s ease 0.5s forwards;
+}
+
+/* NOMBRES PRINCIPALES — los más importantes de la invitación
+   ─────────────────────────────────────────────────────────────
+   Edita el tamaño con font-size si necesitas ajustar
+   ──────────────────────────────────────────────────────────── */
+.hero-names {
+  font-family: var(--font-script);
+  font-size: clamp(3.2rem, 10vw, 5.5rem);
+  color: var(--color-cream);
+  line-height: 1;
+  animation: glowText 3s ease-in-out infinite, fadeSlideUp 1.2s ease 0.8s both;
+}
+
+.hero-names .ampersand {
+  font-size: 0.65em;
+  color: var(--color-gold);
+  display: block;
+  margin: -10px 0;
+}
+
+/* Fecha debajo de los nombres en el hero */
+.hero-date {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-gold-lt);
+  opacity: 0;
+  animation: fadeSlideUp 1s ease 1.2s forwards;
+}
+
+/* Flecha animada que invita a hacer scroll */
+.scroll-arrow {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  opacity: 0;
+  animation: fadeIn 1s ease 2s forwards;
+}
+
+.scroll-arrow svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 1.5;
+  animation: bounce 2s ease infinite;
+}
+
+
+/* ============================================================
+   8c. ORNAMENTOS Y DIVISORES
+   ============================================================ */
+
+/* Línea decorativa con icono central */
+.ornament-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.ornament-line span {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-gold), transparent);
+}
+
+.ornament-line svg {
+  width: 18px;
+  height: 18px;
+  fill: var(--color-gold);
+  flex-shrink: 0;
+}
+
+/* Divisor horizontal con diamante central */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 38px 30px;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-gold-dk), transparent);
+}
+
+.divider-diamond {
+  width: 8px;
+  height: 8px;
+  background: var(--color-gold);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.divider-diamond.small {
+  width: 5px;
+  height: 5px;
+  margin: 0 -4px;
+  opacity: 0.45;
+}
+
+/* Línea que crece horizontalmente al entrar al viewport */
+.grow-line {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-gold), transparent);
+  transform: scaleX(0);
+  transition: transform 1.3s ease;
+}
+
+.grow-line.visible {
+  transform: scaleX(1);
+}
+
+
+/* ============================================================
+   8d. SECCIÓN MENSAJE
+   ============================================================ */
+.section-message {
+  padding: 60px 44px;
+  text-align: center;
+  position: relative;
+}
+
+/* Comilla decorativa grande de fondo */
+.section-message::before {
+  content: '\201C';
+  font-family: var(--font-script);
+  font-size: 9rem;
+  color: var(--color-gold-dk);
+  opacity: 0.25;
+  position: absolute;
+  top: 14px;
+  left: 28px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.message-text {
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  line-height: 1.9;
+  color: var(--color-cream);
+  font-style: italic;
+  font-weight: 300;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.message-signature {
+  margin-top: 22px;
+  font-family: var(--font-script);
+  font-size: 2rem;
+  color: var(--color-gold);
+}
+
+
+/* ============================================================
+   8e. SECCIÓN FOTO PRINCIPAL (pareja)
+   ============================================================ */
+.section-photo {
+  padding: 0 30px;
+  text-align: center;
+}
+
+.photo-frame {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* La imagen de la pareja
+   ─────────────────────────────────────────────────────────────
+   Edita el <img src="..."> en index.html para cambiar la foto
+   ──────────────────────────────────────────────────────────── */
+.photo-frame img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  filter: sepia(18%) brightness(0.9);
+}
+
+/* Marco dorado superpuesto sobre la foto */
+.photo-border {
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(201,168,76,0.5);
+  pointer-events: none;
+}
+
+.photo-label {
+  margin-top: 18px;
+  font-family: var(--font-script);
+  font-size: 1.8rem;
+  color: var(--color-gold-lt);
+}
+
+
+/* ============================================================
+   8f. SECCIÓN DETALLES DEL EVENTO
+   ============================================================ */
+.section-details {
+  padding: 60px 30px;
+  text-align: center;
+}
+
+/* Etiqueta pequeña tipo "EL GRAN DÍA" */
+.section-label {
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: 10px;
+}
+
+/* Título de sección */
+.section-title {
+  font-family: var(--font-script);
+  font-size: clamp(2rem, 6vw, 3rem);
+  color: var(--color-cream);
+  margin-bottom: 38px;
+}
+
+/* Grid de tarjetas de detalle (fecha, hora, lugar) */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 28px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.detail-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Círculo con icono SVG */
+.detail-icon {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-gold-dk);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 1.5;
+}
+
+.detail-label {
+  font-family: var(--font-sans);
+  font-size: 0.53rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-gold-dk);
+}
+
+.detail-value {
+  font-size: 1rem;
+  color: var(--color-cream);
+  font-weight: 300;
+  line-height: 1.45;
+}
+
+
+/* ============================================================
+   8g. CUENTA REGRESIVA
+   ============================================================ */
+.section-countdown {
+  padding: 52px 30px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(26,18,11,0.85), rgba(13,10,8,0.65));
+  border-top:    1px solid rgba(201,168,76,0.12);
+  border-bottom: 1px solid rgba(201,168,76,0.12);
+}
+
+.countdown-grid {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: clamp(10px, 4vw, 28px);
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 64px;
+}
+
+.countdown-num {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 7vw, 3.5rem);
+  font-weight: 300;
+  color: var(--color-gold);
+  line-height: 1;
+  min-width: 2ch;
+  text-align: center;
+}
+
+.countdown-sep {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  color: var(--color-gold-dk);
+  align-self: flex-start;
+  margin-top: 4px;
+  line-height: 1;
+}
+
+.countdown-label {
+  font-family: var(--font-sans);
+  font-size: 0.5rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-gold-dk);
+  margin-top: 6px;
+}
+
+
+/* ============================================================
+   8h. GALERÍA DE FOTOS (3 imágenes en grid asimétrico)
+   ============================================================ */
+.section-gallery {
+  padding: 40px 20px;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+}
+
+/* La foto más grande ocupa las 2 filas de la izquierda */
+.gallery-item.tall {
+  grid-row: span 2;
+}
+
+.gallery-item img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  filter: sepia(14%) brightness(0.85);
+  transition: transform 0.6s ease, filter 0.6s ease;
+  display: block;
+}
+
+.gallery-item.tall img {
+  aspect-ratio: auto;
+  height: 100%;
+}
+
+/* Hover: zoom suave y desaturación */
+.gallery-item:hover img {
+  transform: scale(1.04);
+  filter: sepia(4%) brightness(1);
+}
+
+/* Borde dorado sobre las fotos */
+.gallery-overlay {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(201,168,76,0.2);
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   8i. SECCIÓN CEREMONIAS / VENUES
+   ============================================================ */
+.section-venues {
+  padding: 60px 30px;
+  text-align: center;
+}
+
+.venues-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  max-width: 520px;
+  margin: 28px auto 0;
+}
+
+/* Tarjeta de ceremonia o recepción */
+.venue-card {
+  padding: 26px 18px;
+  border: 1px solid rgba(201,168,76,0.2);
+  background: rgba(26,18,11,0.5);
+  position: relative;
+}
+
+/* Marco interior decorativo */
+.venue-card::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(201,168,76,0.08);
+  pointer-events: none;
+}
+
+.venue-type {
+  font-family: var(--font-sans);
+  font-size: 0.53rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: 10px;
+}
+
+.venue-name {
+  font-family: var(--font-script);
+  font-size: 1.45rem;
+  color: var(--color-cream);
+  margin-bottom: 8px;
+}
+
+.venue-info {
+  font-size: 0.78rem;
+  color: rgba(245,239,230,0.55);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.venue-time {
+  margin-top: 12px;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  color: var(--color-gold-lt);
+}
+
+
+/* ============================================================
+   8j. CÓDIGO DE VESTIMENTA
+   ============================================================ */
+.section-dresscode {
+  padding: 50px 30px;
+  text-align: center;
+}
+
+/* Fila de círculos de colores sugeridos */
+.dresscode-swatches {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.swatch-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,168,76,0.25);
+}
+
+.swatch-name {
+  font-family: var(--font-sans);
+  font-size: 0.52rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(245,239,230,0.45);
+}
+
+
+/* ============================================================
+   8k. BOTÓN RSVP — Enlace al formulario de Google
+   ─────────────────────────────────────────────────────────────
+   El href se edita directamente en index.html
+   ──────────────────────────────────────────────────────────── */
+.section-rsvp {
+  padding: 40px 30px;
+  text-align: center;
+}
+
+.rsvp-button {
+  display: inline-block;
+  padding: 16px 44px;
+  border: 1px solid var(--color-gold);
+  color: var(--color-gold);
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.rsvp-button:hover {
+  background: var(--color-gold);
+  color: var(--color-bg);
+  box-shadow: 0 0 30px rgba(201,168,76,0.4);
+}
+
+/* Texto de contexto sobre el botón */
+.rsvp-hint {
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  color: rgba(245,239,230,0.35);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+
+/* ============================================================
+   8l. SECCIÓN CIERRE
+   ============================================================ */
+.section-closing {
+  padding: 72px 30px 52px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Foto de fondo en la sección de cierre
+   ─────────────────────────────────────────────────────────────
+   PARA CAMBIAR: edita background-image aquí abajo
+   ──────────────────────────────────────────────────────────── */
+.closing-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=700&q=60');
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.18) saturate(0.45);
+  pointer-events: none;
+}
+
+.closing-content {
+  position: relative;
+  z-index: 2;
+}
+
+.closing-quote {
+  font-family: var(--font-script);
+  font-size: clamp(1.7rem, 5vw, 2.7rem);
+  color: var(--color-gold-lt);
+  line-height: 1.45;
+  margin-bottom: 28px;
+}
+
+.closing-names {
+  font-family: var(--font-script);
+  font-size: clamp(2.4rem, 8vw, 4rem);
+  color: var(--color-cream);
+  animation: glowText 3s ease-in-out infinite;
+}
+
+.closing-bottom {
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-gold-dk);
+}
+
+
+/* ============================================================
+   9. CLASES DE ANIMACIÓN SCROLL (.reveal)
+   ─────────────────────────────────────────────────────────────
+   El JS añade .visible cuando el elemento entra al viewport.
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(38px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ============================================================
+   10. RESPONSIVE — MÓVIL
+   ============================================================ */
+@media (max-width: 500px) {
+  /* Sobre más pequeño en pantallas muy angostas */
+  .scene   { width: 300px; height: 200px; }
+  .envelope { width: 280px; height: 180px; }
+
+  /* Venues en columna única */
+  .venues-grid { grid-template-columns: 1fr; }
+
+  /* Hero con menos padding */
+  .hero-frame   { inset: 10px; }
+  .section-message { padding: 50px 24px; }
+  .section-details { padding: 50px 20px; }
+
+  /* Botón RSVP más compacto */
+  .rsvp-button { padding: 14px 28px; }
+}

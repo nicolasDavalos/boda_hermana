@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- ============================================================
+       TÍTULO DE LA PESTAÑA DEL NAVEGADOR
+       ============================================================ -->
+  <title>Valentina &amp; Alejandro — 15 · Noviembre · 2025</title>
+
+  <!-- ============================================================
+       HOJA DE ESTILOS PRINCIPAL
+       Todos los estilos viven en styles.css
+       ============================================================ -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- ============================================================
+       FUENTES DE GOOGLE FONTS
+       Great Vibes    → cursiva para nombres
+       Cormorant      → serif elegante para cuerpo
+       Montserrat     → sans para etiquetas pequeñas
+       ============================================================ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- ============================================================
+     FONDO DE ESTRELLAS — generado por JS
+     ============================================================ -->
+<div class="stars-bg" id="stars"></div>
+
+<!-- ============================================================
+     CANVAS DE PÉTALOS ANIMADOS
+     ============================================================ -->
+<canvas id="petals-canvas"></canvas>
+
+<!-- ============================================================
+     BOTÓN DE MÚSICA — fijo en el centro inferior
+     Visible en AMBAS pantallas (sobre + invitación)
+     El símbolo ♪ cambia a ∥ cuando está reproduciendo (JS)
+     ============================================================ -->
+<button id="music-btn" title="Reproducir / Pausar música" aria-label="Música">♪</button>
+
+
+<!-- ==============================================================
+     ██████████████████████████████████████████████████████████
+     PANTALLA 1 — SOBRE DE INVITACIÓN
+     Se muestra al cargar. Al hacer clic se abre y da paso
+     a la invitación completa (#main-content).
+     ██████████████████████████████████████████████████████████
+     ============================================================== -->
+<div id="envelope-screen">
+
+  <p class="envelope-hint">Una invitación especial para ti</p>
+
+  <div class="scene">
+    <div class="envelope" id="envelope">
+
+      <!-- BASE DEL SOBRE (papel crema) -->
+      <div class="back"></div>
+
+      <!-- CARTA INTERNA — visible al abrir el sobre -->
+      <div class="letter">
+        <p class="letter-pretitle">Save the Date</p>
+
+        <!-- ════════════════════════════════════════════
+             NOMBRES en la carta — EDITA AQUÍ
+             ════════════════════════════════════════════ -->
+        <h2 class="letter-names">Valentina &amp; Alejandro</h2>
+
+        <!-- ════════════════════════════════════════════
+             FECHA en la carta — EDITA AQUÍ
+             ════════════════════════════════════════════ -->
+        <p class="letter-date">15 · Noviembre · 2025</p>
+      </div>
+
+      <!-- SOLAPA DEL SOBRE (se pliega al hacer clic) -->
+      <div class="flap"></div>
+
+    </div><!-- /envelope -->
+  </div><!-- /scene -->
+
+  <!-- Texto bajo el sobre -->
+  <p class="open-text">Toca para abrir</p>
+
+</div><!-- /envelope-screen -->
+
+
+<!-- ==============================================================
+     ██████████████████████████████████████████████████████████
+     PANTALLA 2 — INVITACIÓN COMPLETA
+     Oculta al inicio. El JS la muestra tras cerrar el sobre.
+     ██████████████████████████████████████████████████████████
+     ============================================================== -->
+<div id="main-content">
+
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECCIÓN 1 — HERO / PORTADA
+       Foto de fondo + nombres grandes + fecha
+       ────────────────────────────────────────────────────────── -->
+  <section class="section-hero">
+
+    <!-- Imagen de fondo
+         ══════════════════════════════════════════════════════
+         PARA CAMBIAR LA FOTO: sustituye la URL de background-image
+         en styles.css → .hero-bg { background-image: url(...) }
+         ══════════════════════════════════════════════════════ -->
+    <div class="hero-bg" id="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-frame"></div>
+
+    <div class="hero-content">
+
+      <p class="hero-pretitle">Con amor, los invitamos a celebrar</p>
+
+      <!-- Ornamento superior -->
+      <div class="ornament-line reveal" style="transition-delay:.15s">
+        <span></span>
+        <svg viewBox="0 0 24 24"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+        <span></span>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           NOMBRES PRINCIPALES — EDITA AQUÍ
+           ════════════════════════════════════════════════════ -->
+      <h1 class="hero-names">
+        <span id="name1">Valentina</span>
+        <span class="ampersand">&amp;</span>
+        <span id="name2">Alejandro</span>
+      </h1>
+
+      <!-- ════════════════════════════════════════════════════
+           FECHA — EDITA AQUÍ
+           ════════════════════════════════════════════════════ -->
+      <p class="hero-date" id="hero-date">15 · Noviembre · 2025</p>
+
+      <!-- Ornamento inferior -->
+      <div class="ornament-line reveal" style="transition-delay:.35s">
+        <span></span>
+        <svg viewBox="0 0 24 24"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+        <span></span>
+      </div>
+
+    </div><!-- /hero-content -->
+
+    <!-- Flecha que indica scroll hacia abajo -->
+    <div class="scroll-arrow">
+      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+
+  </section><!-- /section-hero -->
+
+
+  <!-- Divisor decorativo -->
+  <div class="divider reveal">
+    <div class="divider-line"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-diamond"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-line"></div>
+  </div>
+
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECCIÓN 2 — MENSAJE DE BIENVENIDA
+       ────────────────────────────────────────────────────────── -->
+  <section class="section-message">
+
+    <!-- ════════════════════════════════════════════════════
+         MENSAJE — EDITA AQUÍ
+         ════════════════════════════════════════════════════ -->
+    <p class="message-text reveal">
+      Con el corazón lleno de alegría, los invitamos a compartir
+      el día más especial de nuestras vidas, donde dos almas
+      se unen en amor eterno.
+    </p>
+
+    <div class="grow-line reveal" style="max-width:200px;margin:22px auto;transition-delay:.3s"></div>
+
+    <!-- ════════════════════════════════════════════════════
+         FIRMA — EDITA AQUÍ (mismos nombres)
+         ════════════════════════════════════════════════════ -->
+    <p class="message-signature reveal" style="transition-delay:.5s">
+      Valentina &amp; Alejandro
+    </p>
+
+  </section>
+
+
+  <!-- Divisor -->
+  <div class="divider reveal">
+    <div class="divider-line"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-diamond"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-line"></div>
+  </div>
+
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECCIÓN 3 — FOTO DE LA PAREJA
+       ════════════════════════════════════════════════════════
+       PARA CAMBIAR: sustituye el atributo src de la imagen
+       ════════════════════════════════════════════════════════ -->
+  <section class="section-photo">
+    <div class="photo-frame reveal">
+      <img id="couple-photo"
+           src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=500&q=80"
+           alt="Foto de los novios">
+      <div class="photo-border"></div>
+    </div>
+    <p class="photo-label reveal" style="transition-delay:.3s">Para siempre juntos</p>
+  </section>
+
+
+  <!-- Divisor -->
+  <div class="divider reveal">
+    <div class="divider-line"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-diamond"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-line"></div>
+  </div>
+
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECCIÓN 4 — DETALLES DEL EVENTO
+       ════════════════════════════════════════════════════════
+       EDITA: los textos dentro de .detail-value
+       ════════════════════════════════════════════════════════ -->
+  <section class="section-details">
+
+    <p class="section-label reveal">El gran día</p>
+    <h2 class="section-title reveal" style="transition-delay:.2s">Detalles del Evento</h2>
+
+    <div class="details-grid">
+
+      <!-- Fecha -->
+      <div class="detail-card reveal">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <span class="detail-label">Fecha</span>
+        <!-- ══ EDITA AQUÍ ══ -->
+        <span class="detail-value">15 de Noviembre<br>2025</span>
+      </div>
+
+      <!-- Hora -->
+      <div class="detail-card reveal" style="transition-delay:.15s">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <span class="detail-label">Hora</span>
+        <!-- ══ EDITA AQUÍ ══ -->
+        <span class="detail-value">4:00 PM<br>Ceremonia</span>
+      </div>
+
+      <!-- Lugar -->
+      <div class="detail-card reveal" style="transition-delay:.3s">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <span class="detail-label">Lugar</span>
+        <!-- ══ EDITA AQUÍ ══ -->
+        <span class="detail-value">Catedral<br>de Nuestra Señora</span>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECCIÓN 5 — CUENTA REGRESIVA
+       La fecha objetivo se configura en script.js → weddingDate
+       ────────────────────────────────────────────────────────── -->
+  <section class="section-countdown reveal">
+    <p class="section-label">Faltan</p>
+    <h2 class="section-title" style="margin-bottom:0">Para el gran día</h2>
+
+    <div class="countdown-grid">
+      <div class="countdown-unit">
+        <span class="countdown-num" id="cd-days">--</span>
+        <span class="countdown-label">días</span>
+      </div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-unit">
+        <span class="countdown-num" id="cd-hours">--</span>
+        <span class="countdown-label">horas</span>
+      </div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-unit">
+        <span class="countdown-num" id="cd-mins">--</span>
+        <span class="countdown-label">min</span>
+      </div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-unit">
+        <span class="countdown-num" id="cd-secs">--</span>
+        <span class="countdown-label">seg</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Divisor -->
+  <div class="divider reveal">
+    <div class="divider-line"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-diamond"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-line"></div>
+  </div>
+
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECCIÓN 6 — GALERÍA DE FOTOS
+       ════════════════════════════════════════════════════════
+       PARA CAMBIAR: sustituye los src de cada <img>
+       ════════════════════════════════════════════════════════ -->
+  <section class="section-gallery">
+    <p class="section-label reveal" style="text-align:center;margin-bottom:20px">Nuestros momentos</p>
+
+    <div class="gallery-grid">
+
+      <!-- Foto grande izquierda (ocupa 2 filas) -->
+      <div class="gallery-item tall reveal">
+        <img id="gallery-1"
+             src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=400&q=75"
+             alt="Foto 1">
+        <div class="gallery-overlay"></div>
+      </div>
+
+      <!-- Foto superior derecha -->
+      <div class="gallery-item reveal" style="transition-delay:.15s">
+        <img id="gallery-2"
+             src="https://images.unsplash.com/photo-1525183995014-bd94c0750cd5?w=400&q=75"
+             alt="Foto 2">
+        <div class="gallery-overlay"></div>
+      </div>
+
+      <!-- Foto inferior derecha -->
+      <div class="gallery-item reveal" style="transition-delay:.3s">
+        <img id="gallery-3"
+             src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&q=75"
+             alt="Foto 3">
+        <div class="gallery-overlay"></div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- Divisor -->
+  <div class="divider reveal">
+    <div class="divider-line"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-diamond"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-line"></div>
+  </div>
+
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECCIÓN 7 — CEREMONIA Y RECEPCIÓN
+       ════════════════════════════════════════════════════════
+       EDITA: nombres, direcciones y horas de cada venue
+       ════════════════════════════════════════════════════════ -->
+  <section class="section-venues">
+
+    <p class="section-label reveal">El programa</p>
+    <h2 class="section-title reveal" style="transition-delay:.2s">Ceremonia &amp; Recepción</h2>
+
+    <div class="venues-grid">
+
+      <!-- Tarjeta Ceremonia -->
+      <div class="venue-card reveal">
+        <p class="venue-type">Ceremonia</p>
+        <!-- ══ EDITA AQUÍ ══ -->
+        <p class="venue-name">Catedral de Nuestra Señora</p>
+        <p class="venue-info">Plaza Central, s/n</p>
+        <p class="venue-time">4:00 PM</p>
+      </div>
+
+      <!-- Tarjeta Recepción -->
+      <div class="venue-card reveal" style="transition-delay:.2s">
+        <p class="venue-type">Recepción</p>
+        <!-- ══ EDITA AQUÍ ══ -->
+        <p class="venue-name">Hacienda Los Jardines</p>
+        <p class="venue-info">Av. del Bosque 234</p>
+        <p class="venue-time">7:00 PM</p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- Divisor -->
+  <div class="divider reveal">
+    <div class="divider-line"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-diamond"></div>
+    <div class="divider-diamond small"></div>
+    <div class="divider-line"></div>
+  </div>
+
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECCIÓN 8 — CÓDIGO DE VESTIMENTA
+       ════════════════════════════════════════════════════════
+       EDITA: texto del .section-title y descripción
+       Los colores de los círculos se cambian en style=""
+       ════════════════════════════════════════════════════════ -->
+  <section class="section-dresscode">
+
+    <p class="section-label reveal">Por favor vestir</p>
+
+    <!-- ══ EDITA AQUÍ ══ -->
+    <h2 class="section-title reveal" style="transition-delay:.2s">Formal elegante</h2>
+    <p class="reveal" style="font-size:.85rem;color:rgba(245,239,230,.5);transition-delay:.4s;font-style:italic">
+      Traje de noche · Vestido largo o cocktail
+    </p>
+
+    <!-- Paleta de colores sugeridos -->
+    <div class="dresscode-swatches reveal" style="transition-delay:.6s">
+      <div class="swatch">
+        <div class="swatch-circle" style="background:#1a1a2e"></div>
+        <span class="swatch-name">Navy</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-circle" style="background:#2d1b3d"></div>
+        <span class="swatch-name">Ciruela</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-circle" style="background:#3d2b1f"></div>
+        <span class="swatch-name">Cacao</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-circle" style="background:#c9a84c"></div>
+        <span class="swatch-name">Dorado</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-circle" style="background:#e8d5c4"></div>
+        <span class="swatch-name">Champán</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-circle" style="background:#f0ebe3"></div>
+        <span class="swatch-name">Marfil</span>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECCIÓN 9 — BOTÓN RSVP / FORMULARIO GOOGLE
+       ════════════════════════════════════════════════════════
+       IMPORTANTE: sustituye el href con la URL de tu
+       formulario de Google Forms real.
+       ════════════════════════════════════════════════════════ -->
+  <section class="section-rsvp">
+
+    <p class="rsvp-hint reveal">¿Nos acompañarás en este día tan especial?</p>
+
+    <!-- ══ EDITA EL ENLACE href ══ -->
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSer-5woF6ImBNtVJcSY38G-GkYRLAMNlIkXp2bHfaTmBgKxTQ/viewform?usp=publish-editor"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="rsvp-button reveal"
+       style="transition-delay:.2s">
+      Confirmar asistencia ✦
+    </a>
+
+  </section>
+
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECCIÓN 10 — CIERRE
+       ════════════════════════════════════════════════════════
+       EDITA: la frase y los nombres finales
+       ════════════════════════════════════════════════════════ -->
+  <section class="section-closing">
+
+    <div class="closing-bg"></div>
+
+    <div class="closing-content">
+
+      <div class="ornament-line reveal" style="max-width:280px;margin:0 auto 24px">
+        <span></span>
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#c9a84c;flex-shrink:0">
+          <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/>
+        </svg>
+        <span></span>
+      </div>
+
+      <!-- ══ EDITA LA FRASE ══ -->
+      <p class="closing-quote reveal">
+        "El amor no se mira el uno al otro,<br>
+        el amor mira juntos en la misma dirección."
+      </p>
+
+      <!-- ══ EDITA LOS NOMBRES ══ -->
+      <h2 class="closing-names reveal" style="transition-delay:.3s">
+        Valentina &amp; Alejandro
+      </h2>
+
+      <div class="grow-line reveal" style="max-width:200px;margin:28px auto;transition-delay:.5s"></div>
+
+      <!-- ══ EDITA LA FECHA ══ -->
+      <p class="closing-bottom reveal" style="transition-delay:.7s">
+        15 de Noviembre de 2025
+      </p>
+      <p class="closing-bottom reveal" style="transition-delay:.9s;margin-top:8px;opacity:.4">
+        Con todo nuestro amor, los esperamos
+      </p>
+
+    </div>
+
+  </section>
+
+
+</div><!-- /main-content -->
+
+
+<!-- ============================================================
+     JAVASCRIPT PRINCIPAL
+     Se carga al final para no bloquear el renderizado
+     ============================================================ -->
+<script src="script.js"></script>
+
+</body>
+</html>
