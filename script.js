@@ -388,10 +388,10 @@ envelopeEl.addEventListener('click', function openEnvelope() {
    Edita la constante WEDDING_DATE con el formato ISO:
    'AAAA-MM-DDTHH:MM:SS'
    ============================================================ */
-const WEDDING_DATE = new Date('2025-11-15T16:00:00');
+const WEDDING_DATE = new Date('2026-07-18T16:00:00');
 
 function updateCountdown() {
-  const now  = new Date();
+  const now  = new Date();  
   const diff = WEDDING_DATE - now;
 
   if (diff <= 0) {
