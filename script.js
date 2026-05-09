@@ -136,207 +136,43 @@
 
 
 /* ============================================================
-   3. MÚSICA — Web Audio API
+   3. MÚSICA — Archivo MP3 en bucle
    ─────────────────────────────────────────────────────────────
-   Genera una melodía romántica estilo vals directamente con
-   osciladores del navegador. No requiere archivos externos,
-   por lo que funciona perfectamente al subir a GitHub Pages.
-   La melodía se reproduce en bucle infinito.
+   PARA CAMBIAR LA CANCIÓN: reemplaza 'tu-cancion.mp3' con el
+   nombre exacto de tu archivo (respeta mayúsculas/minúsculas)
    ============================================================ */
-
-/* ── 3a. NOTAS EN Hz ── */
-const N = {
-  C3:130.81, D3:146.83, E3:164.81, F3:174.61,
-  G3:196.00, A3:220.00, B3:246.94,
-  C4:261.63, D4:293.66, E4:329.63, F4:349.23,
-  G4:392.00, A4:440.00, B4:493.88,
-  C5:523.25, D5:587.33, E5:659.25, F5:698.46,
-};
-
-/*
-   MELODÍA PRINCIPAL — vals romántico en Do mayor
-   Formato: [frecuencia_Hz, duración_en_pulsos]
-   ─────────────────────────────────────────────────────────────
-   PARA CAMBIAR LA MELODÍA:
-   Sustituye esta variable con tus propias notas y duraciones.
-   El tempo se controla con TEMPO_SEC en la función playMelody.
-*/
-const MELODY = [
-  [N.E4,0.5],[N.D4,0.5],[N.C4,0.5],[N.E4,0.5],
-  [N.G4,1.0],[N.G4,0.5],[N.A4,0.5],
-  [N.G4,0.5],[N.F4,0.5],[N.E4,0.5],[N.D4,0.5],
-  [N.C4,1.5],[N.E4,0.5],
-  [N.F4,0.5],[N.E4,0.5],[N.D4,0.5],[N.C4,0.5],
-  [N.G4,1.0],[N.E4,0.5],[N.G4,0.5],
-  [N.A4,0.5],[N.G4,0.5],[N.F4,0.5],[N.E4,0.5],
-  [N.D4,2.0],
-  [N.G4,0.5],[N.A4,0.5],[N.B4,0.5],[N.C5,0.5],
-  [N.B4,1.0],[N.A4,0.5],[N.G4,0.5],
-  [N.A4,0.5],[N.B4,0.5],[N.C5,0.5],[N.D5,0.5],
-  [N.E5,2.0],
-  [N.D5,0.5],[N.C5,0.5],[N.B4,0.5],[N.A4,0.5],
-  [N.G4,1.0],[N.F4,0.5],[N.E4,0.5],
-  [N.D4,0.5],[N.E4,0.5],[N.F4,0.5],[N.G4,0.5],
-  [N.C4,3.0],
-];
-
-/*
-   ACORDES DE ACOMPAÑAMIENTO
-   Formato: [[nota1, nota2, nota3], duración_en_pulsos]
-*/
-const CHORDS = [
-  [[N.C3,N.E3,N.G3], 2.0],
-  [[N.G3,N.B3,N.D4], 2.0],
-  [[N.A3,N.C4,N.E4], 2.0],
-  [[N.F3,N.A3,N.C4], 2.0],
-  [[N.C3,N.E3,N.G3], 2.0],
-  [[N.G3,N.B3,N.D4], 2.0],
-  [[N.F3,N.A3,N.C4], 2.0],
-  [[N.C3,N.E3,N.G3], 2.0],
-  [[N.G3,N.B3,N.D4], 2.0],
-  [[N.A3,N.C4,N.E4], 2.0],
-  [[N.F3,N.A3,N.C4], 2.0],
-  [[N.C3,N.E3,N.G3], 3.0],
-];
-
-/* ── 3b. FUNCIÓN DE REPRODUCCIÓN ── */
-
-/*
-   Crea y programa un oscilador individual con envolvente ADSR simplificada.
-   - ctx:       AudioContext activo
-   - freq:      Frecuencia en Hz
-   - startTime: Tiempo de inicio (segundos desde ctx.currentTime)
-   - duration:  Duración total en segundos
-   - gain:      Volumen pico (0–1)
-   - type:      Tipo de onda del oscilador
-*/
-function playNote(ctx, freq, startTime, duration, gain, type = 'triangle') {
-  const osc  = ctx.createOscillator();
-  const gainNode = ctx.createGain();
-
-  osc.connect(gainNode);
-  gainNode.connect(ctx.destination);
-
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, startTime);
-
-  /* Envolvente: ataque → sostenido → decaimiento */
-  gainNode.gain.setValueAtTime(0, startTime);
-  gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.06);
-  gainNode.gain.setValueAtTime(gain, startTime + duration - 0.09);
-  gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
-
-  osc.start(startTime);
-  osc.stop(startTime + duration + 0.01);
-}
-
-/*
-   Programa toda la melodía + acordes en el AudioContext.
-   Devuelve la duración total en segundos para calcular el bucle.
-
-   TEMPO_SEC: segundos por pulso. Aumenta para ir más lento,
-              disminuye para ir más rápido.
-*/
-function scheduleMelody(ctx) {
-  const TEMPO_SEC = 0.55;
-  const start     = ctx.currentTime + 0.15;
-  let   t         = start;
-
-  /* Melodía principal (triángulo, volumen medio) */
-  MELODY.forEach(([freq, dur]) => {
-    playNote(ctx, freq, t, dur * TEMPO_SEC * 0.88, 0.22, 'triangle');
-    t += dur * TEMPO_SEC;
-  });
-
-  /* Acordes de acompañamiento (seno, volumen bajo) */
-  let tc = start;
-  CHORDS.forEach(([notes, dur]) => {
-    notes.forEach(f => {
-      playNote(ctx, f, tc, dur * TEMPO_SEC * 0.82, 0.07, 'sine');
-    });
-    tc += dur * TEMPO_SEC;
-  });
-
-  /* Retorna duración para temporizador del bucle */
-  return t - ctx.currentTime;
-}
-
-/* ── 3c. LÓGICA DE BUCLE Y BOTÓN ── */
-
-let audioCtx     = null;
 let musicPlaying = false;
 
-/*
-   Actualiza el ícono y la clase del botón de música
-   según el estado actual (reproduciendo o pausado).
-*/
+const audio = new Audio('WhatsApp Audio 2026-05-08 at 9.44.42 PM.mpeg'); // ← cambia este nombre
+audio.loop = true;
+
 function updateMusicBtn() {
   const btn = document.getElementById('music-btn');
   if (musicPlaying) {
-    btn.textContent = '∥';          /* símbolo de pausa */
+    btn.textContent = '∥';
     btn.classList.add('playing');
   } else {
-    btn.textContent = '♪';          /* símbolo de nota musical */
+    btn.textContent = '♪';
     btn.classList.remove('playing');
   }
 }
 
-/*
-   Inicia o pausa la música. Crea el AudioContext solo cuando
-   el usuario interactúa (requisito de políticas de navegador).
-*/
 async function toggleMusic() {
-  /* Crea AudioContext la primera vez */
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-
-  /* Reanuda si el contexto fue suspendido automáticamente */
-  if (audioCtx.state === 'suspended') {
-    await audioCtx.resume();
-  }
-
   if (musicPlaying) {
-    /* Pausa suspendiendo el contexto */
-    await audioCtx.suspend();
+    audio.pause();
     musicPlaying = false;
-    updateMusicBtn();
-    return;
+  } else {
+    try { await audio.play(); musicPlaying = true; } catch(e) {}
   }
-
-  musicPlaying = true;
   updateMusicBtn();
-
-  /*
-     Bucle recursivo: cuando la melodía está por terminar,
-     vuelve a programarla para reproducción continua.
-  */
-  async function loopSchedule() {
-    if (!musicPlaying) return;
-    if (audioCtx.state === 'suspended') return;
-
-    const duration = scheduleMelody(audioCtx);
-
-    /* Vuelve a llamarse 500ms antes del final para no tener silencio */
-    setTimeout(loopSchedule, (duration - 0.5) * 1000);
-  }
-
-  loopSchedule();
 }
 
-/* Evento del botón de música */
 document.getElementById('music-btn').addEventListener('click', toggleMusic);
 
-/*
-   Intenta iniciar la música automáticamente en el primer
-   toque/clic del usuario sobre cualquier parte de la página.
-   Esto evita bloqueos por políticas de autoplay.
-*/
 document.addEventListener('click', function autoStart() {
   if (!musicPlaying) toggleMusic();
   document.removeEventListener('click', autoStart);
 }, { once: true });
-
 
 /* ============================================================
    4. ANIMACIÓN DEL SOBRE
